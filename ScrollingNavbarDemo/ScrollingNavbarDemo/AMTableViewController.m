@@ -23,7 +23,15 @@
 {
     [super viewDidLoad];
     
-    [self.navigationController.navigationBar setBarTintColor:UIColorFromRGB(0x184fa2)];
+    UIColor *tintColor = UIColorFromRGB(0x184fa2);
+    if (!SystemVersionIsLessThan(@"7.0")) {
+        SEL setBarTintColorSEL = NSSelectorFromString(@"setBarTintColor:");
+        IMP imp = [self.navigationController.navigationBar methodForSelector:setBarTintColorSEL];
+        void (*func)(id, SEL, UIColor *) = (void *)imp;
+        func(self.navigationController.navigationBar, setBarTintColorSEL, tintColor);
+    } else {
+        [self.navigationController.navigationBar setTintColor:tintColor];
+    }
     
     [self setTitle:@"Table View"];
     

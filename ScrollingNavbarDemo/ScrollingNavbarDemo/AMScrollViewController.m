@@ -25,7 +25,15 @@
     [self fakeContent];
 
     // Set the barTintColor. This will determine the overlay that fades in and out upon scrolling.
-    [self.navigationController.navigationBar setBarTintColor:UIColorFromRGB(0x184fa2)];
+    UIColor *tintColor = UIColorFromRGB(0x184fa2);
+    if (!SystemVersionIsLessThan(@"7.0")) {
+        SEL setBarTintColorSEL = NSSelectorFromString(@"setBarTintColor:");
+        IMP imp = [self.navigationController.navigationBar methodForSelector:setBarTintColorSEL];
+        void (*func)(id, SEL, UIColor *) = (void *)imp;
+        func(self.navigationController.navigationBar, setBarTintColorSEL, tintColor);
+    } else {
+        [self.navigationController.navigationBar setTintColor:tintColor];
+    }
 
     // Prompt support is available, but the pop action is glitchy.
 //    self.navigationItem.prompt = @"Prompt text";

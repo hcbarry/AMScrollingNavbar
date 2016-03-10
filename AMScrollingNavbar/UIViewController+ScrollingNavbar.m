@@ -113,10 +113,23 @@
     if (!self.overlay) {
         self.overlay = [[UIView alloc] initWithFrame:frame];
 
-        if (self.navigationController.navigationBar.barTintColor) {
-            [self.overlay setBackgroundColor:self.navigationController.navigationBar.barTintColor];
-        } else if ([UINavigationBar appearance].barTintColor) {
-            [self.overlay setBackgroundColor:[UINavigationBar appearance].barTintColor];
+        SEL barTintColorSEL = NSSelectorFromString(@"barTintColor");
+        UIColor *barTintColor = nil;
+        
+        if ([self.navigationController.navigationBar respondsToSelector:barTintColorSEL]) {
+            IMP imp = [self.navigationController.navigationBar methodForSelector:barTintColorSEL];
+            UIColor *(*func)(id, SEL) = (void *)imp;
+            barTintColor = func(self.navigationController.navigationBar, barTintColorSEL);
+        }
+        
+        if (!barTintColor && SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+            IMP imp = [[UINavigationBar appearance] methodForSelector:barTintColorSEL];
+            UIColor *(*func)(id, SEL) = (void *)imp;
+            barTintColor = func([UINavigationBar appearance], barTintColorSEL);
+        }
+        
+        if (barTintColor) {
+            [self.overlay setBackgroundColor:barTintColor];
         } else {
             NSLog(@"[%s]: %@", __PRETTY_FUNCTION__, @"[AMScrollingNavbarViewController] Warning: no bar tint color set");
         }
@@ -256,7 +269,8 @@
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    if ([gestureRecognizer isKindOfClass:[UIScreenEdgePanGestureRecognizer class]]) {
+    Class UIScreenEdgePanGestureRecognizerClass = NSClassFromString(@"UIScreenEdgePanGestureRecognizer");
+    if ([gestureRecognizer isKindOfClass:UIScreenEdgePanGestureRecognizerClass]) {
         return NO;
     }
     return YES;
@@ -479,7 +493,8 @@
         // properly handle constraint commutativity
         // (when programmatically constraining the topLayoutGuide, it may be either the first or second view in the relation)
         CGFloat directionMultiplier = -1;
-        if ([self.scrollableViewConstraint.firstItem conformsToProtocol:@protocol(UILayoutSupport)]) {
+        Protocol *UILayoutSupportProtocol = NSProtocolFromString(@"UILayoutSupport");
+        if ([self.scrollableViewConstraint.firstItem conformsToProtocol:UILayoutSupportProtocol]) {
             directionMultiplier = 1;
         }
 

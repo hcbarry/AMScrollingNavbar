@@ -14,10 +14,12 @@
 {
 	[[UIApplication sharedApplication] setStatusBarHidden:NO];
 	
-    [[UINavigationBar appearance] setTranslucent:NO];
+    if (!SystemVersionIsLessThan(@"7.0")) {
+        [[UINavigationBar appearance] setTranslucent:NO];
 
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
-    [[UINavigationBar appearance] setTintColor:[UIColor whiteColor]];
+        [[UIApplication sharedApplication] setStatusBarStyle:1]; // UIStatusBarStyleLightContent
+        [[UINavigationBar appearance] setTintColor:[UIColor whiteColor]];
+    }
     NSDictionary *attributes = @{ NSFontAttributeName: [UIFont fontWithName:@"Futura" size:18],
                                   NSForegroundColorAttributeName: [UIColor whiteColor]};
     [[UINavigationBar appearance] setTitleTextAttributes:attributes];
